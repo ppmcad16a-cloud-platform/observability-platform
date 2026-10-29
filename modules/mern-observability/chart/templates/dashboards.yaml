@@ -1,0 +1,16 @@
+{{- if .Values.dashboards.enabled }}
+{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+---
+# Grafana's sidecar loads every ConfigMap labelled grafana_dashboard=1.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mern-dashboard-{{ base $path | trimSuffix ".json" }}
+  labels:
+    grafana_dashboard: "1"
+    app.kubernetes.io/part-of: mern-observability
+data:
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+{{- end }}
