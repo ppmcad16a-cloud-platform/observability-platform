@@ -1,0 +1,19 @@
+# The rule files are loaded with .Files.Get (not as templates), so Helm leaves
+# Prometheus' own placeholders (alert labels, regex groups) untouched.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mern-recording-rules
+  labels:
+    app.kubernetes.io/part-of: mern-observability
+spec:
+{{ .Files.Get "rules/recording.yaml" | indent 2 }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mern-alert-rules
+  labels:
+    app.kubernetes.io/part-of: mern-observability
+spec:
+{{ .Files.Get "rules/alerts.yaml" | indent 2 }}
