@@ -7,11 +7,13 @@ groups:
       # combined ("or") under ONE name, so dashboards and alerts need one query.
       #   Node.js + Python services: http_request_duration_seconds (label status_code)
       #   Java identity-service:     http_server_requests_seconds  (label status)
+      # Health checks are left out: Cloudflare's /api/health answers 503 on purpose
+      # when a backend is down - that is MernServiceDown's job, not a "failed request".
       - record: mern:http_requests:rate5m
         expr: |
           sum by (service, code_class) (
             label_replace(
-              rate(http_request_duration_seconds_count{namespace="mern", route!~"/(health|ready|metrics)"}[5m]),
+              rate(http_request_duration_seconds_count{namespace="mern", route!~"(/api)?/(health|ready|metrics)"}[5m]),
               "code_class", "${1}xx", "status_code", "([0-9]).*")
             or
             label_replace(
@@ -30,4 +32,4 @@ groups:
       - record: mern:http_request_duration_seconds:p95_5m
         expr: |
           histogram_quantile(0.95,
-            sum by (service, le) (rate(http_request_duration_seconds_bucket{namespace="mern", route!~"/(health|ready|metrics)"}[5m])))
+            sum by (service, le) (rate(http_request_duration_seconds_bucket{namespace="mern", route!~"(/api)?/(health|ready|metrics)"}[5m])))
